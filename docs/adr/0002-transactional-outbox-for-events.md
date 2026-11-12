@@ -23,3 +23,5 @@ transacción del caso de uso y un proceso de fondo los publica en orden, marcán
 - Entrega al menos una vez: puede haber duplicados, por eso cada evento lleva `eventId` y los consumidores son idempotentes.
 - Hay una latencia pequeña entre el cambio y su publicación (intervalo del proceso).
 - Una tabla y un proceso más que operar y monitorizar (eventos pendientes, antigüedad del más viejo).
+- Con varias réplicas del triaje, cada una ejecuta su propio relé y un evento puede publicarse más de una vez
+  (todas leen los mismos pendientes). El orden por paciente se conserva dentro de cada réplica.
