@@ -34,7 +34,8 @@ spec:
       labels:
         app.kubernetes.io/name: kafka
     spec:
-      terpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63: 60
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 60
       securityContext:
         fsGroup: 1000
       containers:

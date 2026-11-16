@@ -33,7 +33,8 @@ spec:
         app.kubernetes.io/name: triage-service
         app.kubernetes.io/part-of: vidacruz
     spec:
-      terpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63: 40
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 40
       securityContext:
         runAsNonRoot: true
         runAsUser: 999

@@ -35,3 +35,12 @@ perfil seccomp por defecto. Las imágenes se publicarían en Azure Container Reg
 No se pudo crear una suscripción de Azure: el alta devuelve "You're not eligible for an Azure free account" y la
 solicitud a soporte sigue pendiente. Por eso el despliegue en AKS no se ha ejecutado. Los manifests de `k8s/` están
 preparados para aplicarse en cuanto exista la suscripción.
+## Lecciones de la prueba en Kubernetes local
+Los manifests se probaron en el Kubernetes integrado de Docker Desktop (un nodo). Se encontraron y corrigieron dos problemas que Docker Compose no tenía:
+- **Variables de entorno inyectadas por Kubernetes.** Para cada Service con IP, Kubernetes inyecta en todos los pods del espacio de nombres variables como
+  `REDIS_PORT=tcp://10.x.x.x:6379`. Chocaban con la propiedad `${REDIS_PORT:6379}` del asistente, que no podía convertir ese texto en un número y se negaba
+  a arrancar (`CrashLoopBackOff`). Se resolvió con `enableServiceLinks: false` en todos los pods: los servicios se encuentran por nombre DNS, así que no hacen falta.
+- **Los Job son inmutables.** Cambiar la plantilla de `kafka-init` exige borrarlo y aplicarlo de nuevo. Es seguro: su único trabajo es verificar que el topic existe.
+
+También se comprobó que los discos de PostgreSQL y de Kafka se montan en una subcarpeta (por la carpeta `lost+found` de los discos recién formateados), que Kafka funciona con un
+Service sin IP propia que publica también las direcciones aún no listas, y que los Secret se crean con `--from-literal` para evitar que los saltos de línea de Windows se cuelen en las claves.

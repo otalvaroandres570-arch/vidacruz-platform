@@ -29,7 +29,8 @@ spec:
       labels:
         app.kubernetes.io/name: postgres
     spec:
-      terpZEAWYtiB6bJ16NuLbGCc6CZ6jJdKfb63: 30
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 30
       containers:
         - name: postgres
           image: postgres:16-alpine

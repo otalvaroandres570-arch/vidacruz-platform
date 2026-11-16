@@ -236,6 +236,22 @@ y el flujo de eventos con duplicados, desorden y mensajes corruptos.
 - **Estado en Azure:** **no se ha podido desplegar en Azure.** No fue posible crear una suscripción: el alta devuelve *"You're not eligible for an Azure free account"* con varias cuentas y tarjetas,
   y la solicitud a soporte de Azure sigue pendiente. Los manifests y el procedimiento están listos para aplicarse en cuanto exista la suscripción.
 
+## Verificado en Kubernetes local
+
+Los manifests de `k8s/` se desplegaron y probaron en el Kubernetes integrado de Docker Desktop (un solo nodo). No es AKS, pero es un clúster
+real y es lo más cercano que se pudo ejecutar sin suscripción de Azure. Se usaron las imágenes de los Dockerfiles, un Secret creado a partir del
+`.env` y `kubectl apply -k k8s`:
+
+| Comprobación | Resultado |
+|---|---|
+| Arranque | Los 6 pods (`postgres-0`, `kafka-0`, `redis`, `triage-service`, `assistant-service` y el Job `kafka-init`) en `Running` o `Completed`, sin reinicios |
+| Probes y autenticación | `readiness` de ambos servicios en `UP`; sin API key, `401 UNAUTHORIZED` |
+| Eventos por Kafka dentro del clúster | La vista de urgencias del asistente pasa de 0 a `CRITICO: 1` tras registrar un paciente crítico en el triaje |
+| El triaje no depende del asistente | Con el asistente a 0 réplicas el triaje sigue registrando (`201`); al volver a arrancar, la vista incluye al paciente registrado mientras estaba caído, porque el consumidor retoma desde su último offset confirmado |
+
+Dos problemas propios de Kubernetes, que Docker Compose no tenía, aparecieron y se corrigieron (detalle en el [ADR 0010](docs/adr/0010-aks-deployment-with-in-cluster-state.md)):
+Kubernetes inyecta variables de entorno por cada Service (por ejemplo `REDIS_PORT=tcp://...`) que chocaban con las del asistente (se desactivó con `enableServiceLinks: false`),
+y los Job no admiten cambios en su plantilla (hay que borrarlos y recrearlos).
 ## Limitaciones conocidas y evolución
 
 - Un solo nodo y una réplica por servicio; el diseño ya tolera varias (escalamiento, alertas y vista idempotentes), pero no se ha probado a escala.

@@ -28,6 +28,7 @@ spec:
       labels:
         app.kubernetes.io/name: redis
     spec:
+      enableServiceLinks: false
       containers:
         - name: redis
           image: redis:7-alpine
