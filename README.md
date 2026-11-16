@@ -9,8 +9,8 @@ Está formado por dos microservicios en Java reactivo (Spring Boot, WebFlux y Re
 | Repositorio | Contenido |
 |---|---|
 | `vidacruz-platform` (este) | `docker-compose.yml`, manifests de Kubernetes, ADR, contrato de eventos |
-| [`vidacruz-triage-service`](https://github.com/<usuario>/vidacruz-triage-service) | Registro, clasificación, estados, SLA, escalamiento, reporte y alertas |
-| [`vidacruz-assistant-service`](https://github.com/<usuario>/vidacruz-assistant-service) | Asistente clínico con RAG y vista de urgencias |
+| [`triage-vida-cruz`](https://github.com/otalvaroandres570-arch/triage-vida-cruz) | Registro, clasificación, estados, SLA, escalamiento, reporte y alertas |
+| [`assistant-service`](https://github.com/otalvaroandres570-arch/assistant-service) | Asistente clínico con RAG y vista de urgencias |
 
 ## Ejecutar todo con un solo comando
 
@@ -19,8 +19,8 @@ Requisitos: Docker (con Compose v2) y los tres repositorios clonados **uno junto
 ```
 carpeta/
 ├─ vidacruz-platform/            <- aquí se ejecuta el comando
-├─ vidacruz-triage-service/
-└─ vidacruz-assistant-service/
+├─ triage-vida-cruz/
+└─ assistant-service/
 ```
 
 > Si tus carpetas se llaman distinto (o solo tienes este repositorio), define `TRIAGE_CONTEXT` y `ASSISTANT_CONTEXT` en el
