@@ -1,7 +1,7 @@
 # ADR 0010: Despliegue en AKS con el estado dentro del clúster
 
 ## Estado
-Aceptada
+Aceptada. Pendiente de ejecutar: no se pudo crear la suscripción de Azure (ver la nota al final).
 
 ## Contexto
 El enunciado pide manifests de Kubernetes con Azure como objetivo (AKS o Azure Container Apps) y una URL pública.
@@ -20,7 +20,7 @@ vista de urgencias se puede reconstruir desde Kafka. Cada API se expone con un S
 depender del add-on de Ingress NGINX (cuyo soporte de parches de seguridad está acotado a noviembre de 2026).
 Los secretos (contraseña de PostgreSQL, API keys, key de Gemini, URL del webhook) viven en un Secret de Kubernetes
 creado fuera del repositorio. Los contenedores corren como usuario sin privilegios, sin capacidades de Linux y con
-perfil seccomp por defecto. Las imágenes se publican en Azure Container Registry.
+perfil seccomp por defecto. Las imágenes se publicarían en Azure Container Registry.
 
 ## Consecuencias
 - Cero cambios de código y el menor coste; todo se borra con un solo comando.
@@ -30,3 +30,8 @@ perfil seccomp por defecto. Las imágenes se publican en Azure Container Registr
   escalamiento, de las alertas y de la vista de urgencias ya está diseñada para varias.
 - Operar Kafka y PostgreSQL uno mismo implica copias de seguridad, actualizaciones y monitorización que un servicio
   administrado resolvería. Para producción, migrar PostgreSQL y Redis es cambio de configuración; Kafka exigiría añadir SASL/TLS al cliente.
+
+## Nota sobre el estado (noviembre de 2026)
+No se pudo crear una suscripción de Azure: el alta devuelve "You're not eligible for an Azure free account" y la
+solicitud a soporte sigue pendiente. Por eso el despliegue en AKS no se ha ejecutado. Los manifests de `k8s/` están
+preparados para aplicarse en cuanto exista la suscripción.

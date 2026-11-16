@@ -35,4 +35,4 @@ Se evaluaron canal, entrega fiable, formato y privacidad.
 - Entrega al menos una vez: si el canal acepta el mensaje pero falla el marcado como enviado, se reenvía.
 - Cambiar de canal es sustituir un adaptador (puerto `AlertNotifier`), sin tocar el dominio.
 - Una alerta bloqueada de forma permanente seguiría reintentándose cada 5 min: se vigila con los logs
-  y, en la Épica 7, con una métrica de alertas pendientes.
+  y con la métrica `triage.alerts.pending`.
