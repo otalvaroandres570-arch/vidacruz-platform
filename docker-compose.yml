@@ -62,10 +62,59 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  triage-service:
+    build:
+      context: ${TRIAGE_CONTEXT:-../triage-vida-cruz}
+    image: vidacruz/triage-service:local
+    container_name: vidacruz-triage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      TRIAGE_KAFKA_BOOTSTRAPSERVERS: kafka:19092
+      TRIAGE_SECURITY_APIKEYS: ${TRIAGE_SECURITY_APIKEYS:?TRIAGE_SECURITY_APIKEYS is required (16+ characters)}
+      TRIAGE_ALERTS_WEBHOOK_URL: ${TRIAGE_ALERTS_WEBHOOK_URL:-}
+      # To try escalation quickly, uncomment: TRIAGE_SLA_CRITICO: "1" and TRIAGE_SLAMONITOR_INTERVAL: "2s"
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  assistant-service:
+    build:
+      context: ${ASSISTANT_CONTEXT:-../assistant-service}
+    image: vidacruz/assistant-service:local
+    container_name: vidacruz-assistant
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      REDIS_HOST: redis
+      ASSISTANT_KAFKA_BOOTSTRAPSERVERS: kafka:19092
+      ASSISTANT_SECURITY_APIKEYS: ${ASSISTANT_SECURITY_APIKEYS:?ASSISTANT_SECURITY_APIKEYS is required (16+ characters)}
+      # Optional: without a key the assistant starts and answers 503 (degraded mode)
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-not-configured}
+      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.5-flash}
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
 
 volumes:
   postgres_data:

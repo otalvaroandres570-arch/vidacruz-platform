@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: triage-config
+data:
+  SPRING_PROFILES_ACTIVE: json
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_NAME: triage_db
+  DB_USER: triage_user
+  TRIAGE_KAFKA_BOOTSTRAPSERVERS: kafka:9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage-service
+  labels:
+    app.kubernetes.io/name: triage-service
+    app.kubernetes.io/part-of: vidacruz
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: triage-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: triage-service
+        app.kubernetes.io/part-of: vidacruz
+    spec:
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 40
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: triage-service
+          image: vidacruz/triage-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: triage-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vidacruz-secrets
+                  key: POSTGRES_PASSWORD
+            - name: TRIAGE_SECURITY_APIKEYS
+              valueFrom:
+                secretKeyRef:
+                  name: vidacruz-secrets
+                  key: TRIAGE_SECURITY_APIKEYS
+            - name: TRIAGE_ALERTS_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vidacruz-secrets
+                  key: TRIAGE_ALERTS_WEBHOOK_URL
+                  optional: true
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 200m
+              memory: 384Mi
+            limits:
+              cpu: 1000m
+              memory: 768Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-service
+  labels:
+    app.kubernetes.io/name: triage-service
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: triage-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: http

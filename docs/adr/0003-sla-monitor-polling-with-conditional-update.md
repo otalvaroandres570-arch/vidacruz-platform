@@ -16,7 +16,8 @@ libre el mecanismo (scheduler, consumidor o equivalente) y exige intervalo y SLA
 ## Decisión
 Sondeo periódico (cada 10 s por defecto) sobre los pacientes `REGISTRADO` sin escalar con el SLA vencido
 (índice parcial). Cada paciente se escala en su propia transacción con una actualización condicional
-(`WHERE status = 'REGISTRADO' AND escalated = FALSE`), que guarda el flag, la auditoría y el evento en la outbox.
+(`WHERE status = 'REGISTRADO' AND escalated = FALSE`), que guarda el flag, la auditoría, el evento en la outbox y
+la alerta en la cola.
 
 ## Consecuencias
 - La idempotencia la garantiza la base de datos, no el código: con varias réplicas o ciclos solapados solo
